@@ -120,7 +120,7 @@ int main(int nargs, char *args[])
 	error_handler(check_file_validity(state.ifile, &check_state), &check_state);
 	error_handler(close_file(state.ifile), &check_state);
 
-	printf("File: %s:\nCompression-type: %c, version: %d, movie-size: %lu\nMovie-rect:\n\tfield-size: %d, xmin: %lu, ymin: %lu, xmax: %lu, ymax: %lu (All in twips)\n", state.ifile_n, check_state.compression, check_state.version, check_state.movie_size, check_state.movie_rect.field_size, check_state.movie_rect.fields[0], check_state.movie_rect.fields[1], check_state.movie_rect.fields[2], check_state.movie_rect.fields[3]);
+	printf("File: %s:\nCompression-type: %c, version: %d, movie-size: %llu\nMovie-rect:\n\tfield-size: %d, xmin: %llu, ymin: %llu, xmax: %llu, ymax: %llu (All in twips)\n", state.ifile_n, check_state.compression, check_state.version, check_state.movie_size, check_state.movie_rect.field_size, check_state.movie_rect.fields[0], check_state.movie_rect.fields[1], check_state.movie_rect.fields[2], check_state.movie_rect.fields[3]);
 
 	exit(0x0);
 }
