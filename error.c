@@ -14,6 +14,7 @@
 /* This is ugly with lots of repetition and wastage, but I kept it this way so that we have a simple static logic to actually print these things. RIP memory */
 #define FATAL_ERR_MSG "\x1b[31;1;4;5;7m" "FATAL ERROR:" "\x1b[0m" " "
 #define WARN_MSG "\x1b[35;1m" "WARNING:" "\x1b[0m" " "
+#define ALL_CLEAR_MSG COL_GR FM_BOLD "ALL CLEAR:" FM_RESET " "
 
 #define UNKNOWN_ERR_MSG "Unknown Error"
 
@@ -64,6 +65,7 @@ err error_handler(err code, pdata *state)
 {
 	if(!ER_ERROR(code))
 	{
+		fprintf(stderr, ALL_CLEAR_MSG "No errors encountered\n");
 		return code;
 	}
 	fprintf(stderr, "Add a stacktrace goddamnit. Error code: %x\n", code);
