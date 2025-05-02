@@ -117,6 +117,7 @@ int main(int nargs, char *args[])
 	}
 
 	pdata check_state;
+	error_handler(init_parse_data(&check_state), &check_state);
 	error_handler(check_file_validity(state.ifile, &check_state), &check_state);
 	error_handler(close_file(state.ifile), &check_state);
 
