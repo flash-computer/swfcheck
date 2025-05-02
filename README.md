@@ -37,3 +37,21 @@ cc swfcheck.c error.c -L$LIB -lswftag -Wall -std=c99 -o swfcheck
 ```sh
 swfcheck -h
 ```
+
+## Debug Instructions
+
+1. Follow all the steps upto 5, just replace the command in step 6 with:
+
+```sh
+cc swfcheck.c error.c /PATH/TO/LIBSWFTAG/Implementations/*.c -Wall -std=c99 -g -o swfcheck
+```
+
+Replacing `/PATH/TO/LIBSWFTAG/` with the actual path to the libswftag source directory.
+
+2. Use a debugger like the GNU debugger to debug the executable.
+
+```sh
+gdb --args ./swfcheck /PATH/TO/SWF
+```
+
+Currently the program only accepts one file as argument, that being the last file argument provided.
