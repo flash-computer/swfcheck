@@ -69,7 +69,7 @@ err error_handler(err code, pdata *state)
 		return code;
 	}
 	fprintf(stderr, "Add a stacktrace goddamnit. Error code: %x\n", code);
-	fprintf(stderr, "Pdata state: state->u_movie: %p, state->tag_stream_end: %p\n", state->u_movie, state->tag_stream_end);
+	fprintf(stderr, "Pdata state: state->u_movie: %p, state->tag_stream_end: %p\n", state->u_movie, (void *)state->tag_stream_end);
 	if(state->tag_stream_end)
 	{
 		swf_tag *tag = ((swf_tag *)state->tag_stream_end);

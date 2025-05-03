@@ -43,7 +43,7 @@ swfcheck -h
 1. Follow all the steps upto 5, just replace the command in step 6 with:
 
 ```sh
-cc swfcheck.c error.c /PATH/TO/LIBSWFTAG/Implementations/*.c -Wall -std=c99 -g -o swfcheck
+cc swfcheck.c error.c /PATH/TO/LIBSWFTAG/Implementations/*.c -Wall -std=c99 -pedantic -g -o swfcheck
 ```
 
 Replacing `/PATH/TO/LIBSWFTAG/` with the actual path to the libswftag source directory.

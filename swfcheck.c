@@ -61,7 +61,6 @@ err close_file(FILE *file)
 int main(int nargs, char *args[])
 {
 	struct program_state state;
-	state.ifile_n = state.ofile_n = state.logfile_n = NULL;
 
 	state.ifile = stdin;
 	state.ofile = stdout;
