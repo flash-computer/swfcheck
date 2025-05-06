@@ -49,11 +49,11 @@ const static char *help_fmt = FM_RESET FM_BOLD "SWFcheck version %u.%u" FM_RESET
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------|-----------------------------------------------------------------*/
 
-err close_file(FILE *file)
+err close_file(FILE *file, pdata *state)
 {
 	if(fclose(file))
 	{
-		return EFL_CLOSE;
+		return error_handler(EFL_CLOSE, state);
 	}
 	return ALL_CLEAR;
 }
@@ -72,6 +72,8 @@ int main(int nargs, char *args[])
 
 	size_t argcnt = nargs;
 	argcnt--;
+
+	pdata check_state;
 
 	while(argcnt)
 	{
@@ -108,18 +110,21 @@ int main(int nargs, char *args[])
 			state.ifile_n = args[nargs-argcnt];
 			if(state.ifile != stdin && state.ifile != stdout && state.ifile != stderr)
 			{
-				close_file(state.ifile);
+				close_file(state.ifile, &check_state);
 			}
 			state.ifile = fopen(state.ifile_n, "rb");
 		}
 		argcnt--;
 	}
 
-	pdata check_state;
-	error_handler(init_parse_data(&check_state), &check_state);
-	error_handler(check_file_validity(state.ifile, &check_state), &check_state);
-	error_handler(close_file(state.ifile), &check_state);
+	init_parse_data(&check_state);
+	check_file_validity(state.ifile, &check_state);
+	close_file(state.ifile, &check_state);
 
+	if(check_state.pec_list == NULL)
+	{
+		printf(COL_GR FM_BOLD "ALL CLEAR, check passed with no peculiarities encountered" FM_RESET "\n");
+	}
 	printf("File: %s:\nCompression-type: %c, version: %d, movie-size: %llu\nMovie-rect:\n\tfield-size: %d, xmin: %llu, xmax: %llu, ymin: %llu, ymax: %llu (All in twips)\n", state.ifile_n, check_state.compression, check_state.version, check_state.movie_size, check_state.movie_rect.field_size, check_state.movie_rect.fields[0], check_state.movie_rect.fields[1], check_state.movie_rect.fields[2], check_state.movie_rect.fields[3]);
 
 	exit(0x0);

@@ -14,6 +14,7 @@
 /* This is ugly with lots of repetition and wastage, but I kept it this way so that we have a simple static logic to actually print these things. RIP memory */
 #define FATAL_ERR_MSG "\x1b[31;1;4;5;7m" "FATAL ERROR:" "\x1b[0m" " "
 #define WARN_MSG "\x1b[35;1m" "WARNING:" "\x1b[0m" " "
+#define PECULIARITY_MSG "\x1b[34;1;4;7m" "PECULIARITY:" "\x1b[0m" " "
 #define ALL_CLEAR_MSG COL_GR FM_BOLD "ALL CLEAR:" FM_RESET " "
 
 #define UNKNOWN_ERR_MSG "Unknown Error"
@@ -26,7 +27,7 @@ swf_shortfile_err_msg
 swf_tag_err_msg
 swf_improper_err_msg
 */
-#define swf_error_messages {UNKNOWN_ERR_MSG, "Invalid file signature", "Unexpected end of file", "Invalid tag encountered", "File is improper", UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG}
+#define swf_error_messages {UNKNOWN_ERR_MSG, "Invalid file signature", "Unexpected end of file", "File is improper", UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG, UNKNOWN_ERR_MSG}
 
 /*
 prog_misc_err_msg
@@ -72,16 +73,21 @@ err error_handler(err code, pdata *state)
 	fprintf(stderr, "Pdata state: state->u_movie: %p, state->tag_stream_end: %p\n", state->u_movie, (void *)state->tag_stream_end);
 	if(state->tag_stream_end)
 	{
-		swf_tag *tag = ((swf_tag *)state->tag_stream_end);
+		swf_tag *tag = ((dnode *)state->tag_stream_end)->data;
 		fprintf(stderr, "Problematic tag: %d, name: %s, data_pointer: %p, offset = %lu\n", tag->tag, tag_name(tag->tag), tag->tag_data, (tag->tag_data) - (state->u_movie));
 	}
 	fprintf(stderr, "%s%s\n", (code & 0xF0)?FATAL_ERR_MSG:WARN_MSG, error_messages[(code & 0xF0)>>4][code & 0xF]);
-	// exit(code);
-	return code;
+	exit(code);
 }
 
 void callback_peculiarity(pdata *state, dnode *node)
 {
-	fprintf(stdout, "Peculiarity encountered: %x\n", ((peculiar *)(node->data))->pattern);
+	ui32 pattern = ((peculiar *)(node->data))->pattern;
+	fprintf(stderr, PECULIARITY_MSG "Peculiarity encountered: 0x%llx\n", pattern);
+	if(pattern == PEC_INVAL_TAG)
+	{
+		swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
+		fprintf(stderr, FM_BOLD "Tag code: %u, Tag size: %u" FM_RESET "\n", last_tag->tag, last_tag->size);
+	}
 	return;
 }
