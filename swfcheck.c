@@ -125,7 +125,7 @@ int main(int nargs, char *args[])
 	{
 		printf(COL_GR FM_BOLD "ALL CLEAR, check passed with no peculiarities encountered" FM_RESET "\n");
 	}
-	printf("File: %s:\nCompression-type: %c, version: %d, movie-size: %llu\nMovie-rect:\n\tfield-size: %d, xmin: %llu, xmax: %llu, ymin: %llu, ymax: %llu (All in twips)\n", state.ifile_n, check_state.compression, check_state.version, check_state.movie_size, check_state.movie_rect.field_size, check_state.movie_rect.fields[0], check_state.movie_rect.fields[1], check_state.movie_rect.fields[2], check_state.movie_rect.fields[3]);
+	printf("File: %s:\nCompression-type: %c, version: %ju, movie-size: %ju\nMovie-rect:\n\tfield-size: %ju, xmin: %ju, xmax: %ju, ymin: %ju, ymax: %ju (All in twips)\n", state.ifile_n, check_state.compression, (uintmax_t)check_state.version, (uintmax_t)check_state.movie_size, (uintmax_t)check_state.movie_rect.field_size, (uintmax_t)check_state.movie_rect.fields[0], (uintmax_t)check_state.movie_rect.fields[1], (uintmax_t)check_state.movie_rect.fields[2], (uintmax_t)check_state.movie_rect.fields[3]);
 
 	exit(0x0);
 }

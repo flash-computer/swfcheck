@@ -12,7 +12,7 @@
 /* It honestly brings me immense shame that I do not know how to make multidimensional arrays of strings in c */
 
 /* This is ugly with lots of repetition and wastage, but I kept it this way so that we have a simple static logic to actually print these things. RIP memory */
-#define FATAL_ERR_MSG "\x1b[31;1;4;5;7m" "FATAL ERROR:" "\x1b[0m" " "
+#define FATAL_ERR_MSG "\x1b[31;1;4;5;7m" "FATAL ERROR:" "\x1b[0m\a" " "
 #define WARN_MSG "\x1b[35;1m" "WARNING:" "\x1b[0m" " "
 #define PECULIARITY_MSG "\x1b[34;1;4;7m" "PECULIARITY:" "\x1b[0m" " "
 #define ALL_CLEAR_MSG COL_GR FM_BOLD "ALL CLEAR:" FM_RESET " "
@@ -58,6 +58,11 @@ all_clear_msg
 
 const static char error_messages[16][16][100] = {peculiar_exit_messages, undefined_categories_messages, memory_error_messages, undefined_categories_messages, file_error_messages, undefined_categories_messages, prog_error_messages, undefined_categories_messages, swf_error_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages};
 
+#define unknown_peculiarity_msg "This peculiarity has not been defined yet. If you encounter this, something is wrong."
+#define peculiar_string_messages {"Padding in a bitfield isn't 0", "Tag is larger than it should be", "Mythical tag with no standard definition encountered", "Tag encountered in swf newer than the reported swf version", "Actual file size smaller than reported in header", "Undefined tag encountered", "Swf ends without a properly placed T_END tag"}
+
+const static char peculiar_messages[7][100] = peculiar_string_messages;
+
 /*----------------------------------------------------------Implementations----------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------|-----------------------------------------------------------------*/
@@ -74,20 +79,29 @@ err error_handler(err code, pdata *state)
 	if(state->tag_stream_end)
 	{
 		swf_tag *tag = ((dnode *)state->tag_stream_end)->data;
-		fprintf(stderr, "Problematic tag: %d, name: %s, data_pointer: %p, offset = %lu\n", tag->tag, tag_name(tag->tag), tag->tag_data, (tag->tag_data) - (state->u_movie));
+		fprintf(stderr, "Problematic tag: %d, name: %s, data_pointer: %p, offset = %tu\n", tag->tag, tag_name(tag->tag), tag->tag_data, ((tag->tag_data) - (state->u_movie)));
 	}
 	fprintf(stderr, "%s%s\n", (code & 0xF0)?FATAL_ERR_MSG:WARN_MSG, error_messages[(code & 0xF0)>>4][code & 0xF]);
 	exit(code);
 }
 
-void callback_peculiarity(pdata *state, dnode *node)
+err callback_peculiarity(pdata *state, dnode *node)
 {
 	ui32 pattern = ((peculiar *)(node->data))->pattern;
-	fprintf(stderr, PECULIARITY_MSG "Peculiarity encountered: 0x%llx\n", pattern);
-	if(pattern == PEC_INVAL_TAG)
+	fprintf(stderr, PECULIARITY_MSG "Peculiarity encountered: 0x%jx\n", (uintmax_t)pattern);
+	if(pattern >= 0x10 && pattern <= 0x16)
+	{
+		fprintf(stdout, FM_BOLD "%s" FM_RESET "\n", peculiar_messages[pattern-0x10]);
+	}
+	else
+	{
+		fprintf(stderr, COL_RD FM_INVR "\a" unknown_peculiarity_msg "\n");
+		return WAF_PEC_FILTERED;
+	}
+	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG)
 	{
 		swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
-		fprintf(stderr, FM_BOLD "Tag code: %u, Tag size: %u" FM_RESET "\n", last_tag->tag, last_tag->size);
+		fprintf(stderr, FM_BOLD "Tag code: %u, Tag size: %u" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size);
 	}
-	return;
+	return 0;
 }
