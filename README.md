@@ -1,4 +1,4 @@
-# SWFcheck
+# SWFcheck 0.1
 An under development cli swf verification program based on github.com/flash-computer/libswftag
 
 ## Build Instructions:
@@ -18,7 +18,7 @@ cd libswftag
 make
 ```
 
-4. A new folder named `build` will be created inside. move the `include` and `lib` folders inside to the include and lib directories of your machine. For linux, it's usually `/usr/include/` and `/var/lib/`. Further, we'll alias these as $INCLUDE and $LIB.
+4. Copy the `include` and `lib`(You can ignore the `lib/optional` and `lib/intermediate` folders, they are not important. folders inside to the include and lib directories of your machine. For linux, it's usually `/usr/include/` and `/var/lib/`. Further, we'll alias these as $INCLUDE and $LIB.
 
 5. Download or clone [the swfcheck repo](https://github.com/flash-computer/swfcheck)
 
@@ -26,10 +26,10 @@ make
 git clone https://github.com/flash-computer/swfcheck
 ```
 
-6. cd into the directory and compile with the following options:
+6. cd into the directory and compile with:
 
 ```sh
-cc swfcheck.c error.c -L$LIB -lswftag -Wall -std=c99 -o swfcheck
+make
 ```
 
 7. This will create an executable named `swfcheck` (followed by an extension like .exe if your OS mandates that for executables) in the current directory. You can copy this somewhere onto your path and use it.
@@ -43,7 +43,7 @@ swfcheck -h
 1. Follow all the steps upto 5, just replace the command in step 6 with:
 
 ```sh
-cc swfcheck.c error.c /PATH/TO/LIBSWFTAG/Implementations/*.c -Wall -std=c99 -pedantic -g -o swfcheck
+cc swfcheck.c error.c /PATH/TO/LIBSWFTAG/src/*.c -Wall -std=c99 -pedantic -g -o swfcheck
 ```
 
 Replacing `/PATH/TO/LIBSWFTAG/` with the actual path to the libswftag source directory.

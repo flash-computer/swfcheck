@@ -1,17 +1,17 @@
 CC = cc
-CFLAGS = -O2 -g -I$(libswftag_root)/include -Wall -std=c99 -pedantic
+CFLAGS = -O2 -g -I$(libswftag_lib_root)/include -Wall -std=c99 -pedantic
 
-libswftag_root = ../libswftag
+libswftag_lib_root = ../libswftag/lib
 
 objs = \
 	error.o \
 	swfcheck.o \
 
-swfcheck: $(objs) $(libswftag_root)/libswftag.a
+swfcheck: $(objs) $(libswftag_lib_root)/libswftag.a
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(libswftag_root)/libswftag.a:
-	$(MAKE) -C $(libswftag_root)
+$(libswftag_lib_root)/libswftag.a:
+	$(MAKE) -C $(libswftag_lib_root)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

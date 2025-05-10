@@ -105,7 +105,7 @@ err callback_peculiarity(pdata *state, dnode *node)
 	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG)
 	{
 		swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
-		fprintf(stderr, FM_BOLD "Tag code: %u, Tag size: %u, tag_number" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size);
+		fprintf(stderr, FM_BOLD "Tag code: %ju, Tag size: %ju, tag_number:%ju" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
 	}
 	return 0;
 }
