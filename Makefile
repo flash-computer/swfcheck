@@ -13,5 +13,8 @@ swfcheck: $(objs) $(libswftag_root)/libswftag.a
 $(libswftag_root)/libswftag.a:
 	$(MAKE) -C $(libswftag_root)
 
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
 	rm -f $(objs)
