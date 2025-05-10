@@ -67,7 +67,7 @@ const static char peculiar_messages[8][100] = peculiar_string_messages;
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------|-----------------------------------------------------------------*/
 
-err error_handler(err code, pdata *state)
+err error_handler(pdata *state, err code)
 {
 	if(!ER_ERROR(code))
 	{
@@ -75,7 +75,7 @@ err error_handler(err code, pdata *state)
 		return code;
 	}
 	fprintf(stderr, "Error code: %x\n", code);
-	fprintf(stderr, "Pdata state: state->u_movie: %p, state->tag_stream_end: %p\n", state->u_movie, (void *)state->tag_stream_end);
+	fprintf(stderr, "Pdata state: state->u_movie: %p, state->tag_stream_end: %p\nTags scanned: %ju\n", (void *)state->u_movie, (void *)state->tag_stream_end, (uintmax_t)state->n_tags);
 	if(state->tag_stream_end)
 	{
 		swf_tag *tag = ((dnode *)state->tag_stream_end)->data;
@@ -87,6 +87,10 @@ err error_handler(err code, pdata *state)
 
 err callback_peculiarity(pdata *state, dnode *node)
 {
+	if(!state || !node)
+	{
+		return error_handler(state, EFN_ARGS);
+	}
 	ui32 pattern = ((peculiar *)(node->data))->pattern;
 	fprintf(stderr, PECULIARITY_MSG "Peculiarity encountered: 0x%jx\n", (uintmax_t)pattern);
 	if(pattern >= 0x10 && pattern <= 0x17)
@@ -101,7 +105,7 @@ err callback_peculiarity(pdata *state, dnode *node)
 	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG)
 	{
 		swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
-		fprintf(stderr, FM_BOLD "Tag code: %u, Tag size: %u" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size);
+		fprintf(stderr, FM_BOLD "Tag code: %u, Tag size: %u, tag_number" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size);
 	}
 	return 0;
 }

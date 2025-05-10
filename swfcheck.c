@@ -49,11 +49,11 @@ const static char *help_fmt = FM_RESET FM_BOLD "SWFcheck version %u.%u" FM_RESET
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------|-----------------------------------------------------------------*/
 
-err close_file(FILE *file, pdata *state)
+err close_file(pdata *state, FILE *file)
 {
 	if(fclose(file))
 	{
-		return error_handler(EFL_CLOSE, state);
+		return error_handler(state, EFL_CLOSE);
 	}
 	return ALL_CLEAR;
 }
@@ -110,7 +110,7 @@ int main(int nargs, char *args[])
 			state.ifile_n = args[nargs-argcnt];
 			if(state.ifile != stdin && state.ifile != stdout && state.ifile != stderr)
 			{
-				close_file(state.ifile, &check_state);
+				close_file(&check_state, state.ifile);
 			}
 			state.ifile = fopen(state.ifile_n, "rb");
 		}
@@ -118,14 +118,14 @@ int main(int nargs, char *args[])
 	}
 
 	init_parse_data(&check_state);
-	check_file_validity(state.ifile, &check_state);
-	close_file(state.ifile, &check_state);
+	check_file_validity(&check_state, state.ifile);
+	close_file(&check_state, state.ifile);
 
 	if(check_state.pec_list == NULL)
 	{
 		printf(COL_GR FM_BOLD "ALL CLEAR, check passed with no peculiarities encountered" FM_RESET "\n");
 	}
-	printf("File: %s:\nCompression-type: %c, version: %ju, movie-size: %ju\nMovie-rect:\n\tfield-size: %ju, xmin: %ju, xmax: %ju, ymin: %ju, ymax: %ju (All in twips)\n", state.ifile_n, check_state.compression, (uintmax_t)check_state.version, (uintmax_t)check_state.movie_size, (uintmax_t)check_state.movie_rect.field_size, (uintmax_t)check_state.movie_rect.fields[0], (uintmax_t)check_state.movie_rect.fields[1], (uintmax_t)check_state.movie_rect.fields[2], (uintmax_t)check_state.movie_rect.fields[3]);
+	printf("File: %s:\nCompression-type: %c, version: %ju, movie-size: %ju\nMovie-rect:\n\tfield-size: %ju, xmin: %ju, xmax: %ju, ymin: %ju, ymax: %ju (All in twips)\nTotal number of tags: %ju\n", state.ifile_n, check_state.compression, (uintmax_t)check_state.version, (uintmax_t)check_state.movie_size, (uintmax_t)check_state.movie_rect.field_size, (uintmax_t)check_state.movie_rect.fields[0], (uintmax_t)check_state.movie_rect.fields[1], (uintmax_t)check_state.movie_rect.fields[2], (uintmax_t)check_state.movie_rect.fields[3], (uintmax_t)check_state.n_tags);
 
 	exit(0x0);
 }
