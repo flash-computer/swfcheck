@@ -8,8 +8,10 @@ objs = \
 	error.o \
 	swfcheck.o \
 
+libs = -lz
+
 swfcheck: $(objs) $(libswftag_lib_root)/libswftag.a
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(libs)
 
 $(libswftag_lib_root)/libswftag.a:
 	$(MAKE) -C $(libswftag_root)
