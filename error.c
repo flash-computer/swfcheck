@@ -13,7 +13,7 @@
 
 /* This is ugly with lots of repetition and wastage, but I kept it this way so that we have a simple static logic to actually print these things. RIP memory */
 #define FATAL_ERR_MSG "\x1b[31;1;4;5;7m" "FATAL ERROR:" "\x1b[0m\a" " "
-#define WARN_MSG "\x1b[35;1m" "WARNING:" "\x1b[0m" " "
+#define WARN_MSG "\x1b[35;1m" "WARNING:" "\x1b[0m\a" " "
 #define PECULIARITY_MSG "\x1b[34;1;4;7m" "PECULIARITY:" "\x1b[0m" " "
 #define ALL_CLEAR_MSG COL_GR FM_BOLD "ALL CLEAR:" FM_RESET " "
 
@@ -53,15 +53,25 @@ memory_allocfailure_err_msg
 /*
 all_clear_msg
 */
-#define UNKNOWN_PECULIAR_EXIT_MSG "Verification successful with unknown but present caveats"
-#define peculiar_exit_messages {"This is not an error. You should never see this", UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG}
+#define UNKNOWN_PECULIAR_EXIT_MSG "Verification failed with unknown but present caveats"
+#define peculiar_exit_messages {"This is not an error. You should never see this",  "Peculiarity Filtered", UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG}
 
 const static char error_messages[16][16][100] = {peculiar_exit_messages, undefined_categories_messages, memory_error_messages, undefined_categories_messages, file_error_messages, undefined_categories_messages, prog_error_messages, undefined_categories_messages, swf_error_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages};
 
-#define unknown_peculiarity_msg "This peculiarity has not been defined yet. If you encounter this, something is wrong."
-#define peculiar_string_messages {"Padding in a bitfield isn't 0", "Tag is larger than it should be", "Mythical tag with no standard definition encountered", "Tag encountered in swf newer than the reported swf version", "Actual file size smaller than reported in header", "Undefined tag encountered", "Swf ends without a properly placed T_END tag", "Anomalous swf version"}
+#define UNKNOWN_PECULIARITY_MSG "This peculiarity has not been defined yet. If you encounter this, something is wrong."
+#define N_PEC ((PEC_MAX - PEC_MIN) + 1)
+#define PECULIAR_STRING_MESSAGES {"Padding in a bitfield isn't 0", "Tag is larger than it should be", "Mythical tag with no standard definition encountered", "Tag encountered in swf newer than the reported swf version", "Actual file size smaller than reported in header", "Undefined tag encountered", "Swf ends without a properly placed T_END tag", "Anomalous swf version", "File extends after the movie"}
 
-const static char peculiar_messages[8][100] = peculiar_string_messages;
+const static char peculiar_messages[N_PEC][100] = PECULIAR_STRING_MESSAGES;
+
+#define N_LOW_RISK_INVAL_TAGS 4
+
+// Tag 700 is used often by flv swfs exported from Techsmith Camtasia Studio
+// Tag 777 Seems to be a side effect of using swftools, especially merge-tool
+// Tag 255 Often contains a single byte, 0x20 or 0x30 and I don't know for sure what it does, besides the fact that AS2 flashes have the byte as 0x20 and AS3 ones have 0x30.
+// Tag 253 is a product of an old obfuscation trick by embedding actions within some amount of junk
+// Additional Checks can be added for both to ensure that Tag 700 only contains the Camtasia Studio Watermark and that Tag 777 is empty
+const static ui16 low_risk_inval_tags[N_LOW_RISK_INVAL_TAGS] = {700, 777, 255, 253};
 
 /*----------------------------------------------------------Implementations----------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
@@ -93,19 +103,53 @@ err callback_peculiarity(pdata *state, dnode *node)
 	}
 	ui32 pattern = ((peculiar *)(node->data))->pattern;
 	fprintf(stderr, PECULIARITY_MSG "Peculiarity encountered: 0x%jx\n", (uintmax_t)pattern);
-	if(pattern >= 0x10 && pattern <= 0x17)
+	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG)
 	{
-		fprintf(stdout, FM_BOLD "%s" FM_RESET "\n", peculiar_messages[pattern-0x10]);
+		if(!(state->tag_stream_end))
+		{
+			return error_handler(state, EFN_ARGS);
+		}
+		swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
+		if(!last_tag)
+		{
+			return error_handler(state, EFN_ARGS);
+		}
+		fprintf(stderr, FM_BOLD "Tag code: %ju, Tag size: %ju, tag_number:%ju" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
+	}
+	if(pattern >= PEC_MIN && pattern <= PEC_MAX)
+	{
+		fprintf(stdout, FM_BOLD "%s" FM_RESET "\n", peculiar_messages[pattern-PEC_MIN]);
+		switch(pattern)
+		{
+			case PEC_INVAL_TAG:
+				if(!(state->tag_stream_end))
+				{
+					return error_handler(state, EFN_ARGS);
+				}
+				swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
+				if(!last_tag)
+				{
+					return error_handler(state, EFN_ARGS);
+				}
+				for(size_t i=0; i<N_LOW_RISK_INVAL_TAGS; i++)
+				{
+					if(last_tag->tag == low_risk_inval_tags[i])
+					{
+						goto tag_accepted;
+					}
+				}
+				return error_handler(state, WAF_PEC_FILTERED);
+				tag_accepted:
+				break;
+			case PEC_DATA_AFTER_MOVIE:
+				// TODO: Add an option to write the truncated, valid movie to a new file
+				break;
+		}
 	}
 	else
 	{
-		fprintf(stderr, COL_RD FM_INVR "\a" unknown_peculiarity_msg "\n");
-		return WAF_PEC_FILTERED;
-	}
-	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG)
-	{
-		swf_tag *last_tag = ((dnode *)(state->tag_stream_end))->data;
-		fprintf(stderr, FM_BOLD "Tag code: %ju, Tag size: %ju, tag_number:%ju" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
+		fprintf(stderr, COL_RD FM_INVR "\a" UNKNOWN_PECULIARITY_MSG FM_RESET "\n");
+		return error_handler(state, WAF_PEC_FILTERED);
 	}
 	return 0;
 }
