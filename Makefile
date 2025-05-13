@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -O2 -g -I$(libswftag_root)/include -Wall -std=c99 -pedantic
+CFLAGS = -g -I$(libswftag_root)/include -Wall -std=c99 -pedantic
 
 libswftag_root = ../libswftag
 libswftag_lib_root = ../libswftag/lib
@@ -10,14 +10,13 @@ objs = \
 
 libs = -lz
 
-swfcheck: $(objs) $(libswftag_lib_root)/libswftag.a
-	$(CC) $(CFLAGS) $^ -o $@ $(libs)
+build/swfcheck: $(objs) $(libswftag_lib_root)/libswftag.a
+	$(CC) $(CFLAGS) $(EXTRA_FLAGS) $^ -o $@ $(libs)
+	rm -f $(objs)
 
-$(libswftag_lib_root)/libswftag.a:
-	$(MAKE) -C $(libswftag_root)
+$(libswftag_lib_root)/libswftag.a: $(libswftag_root)
+	$(MAKE) EXTRA_FLAGS=$(EXTRA_FLAGS) -C $(libswftag_root)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	rm -f $(objs)
+	mkdir -p build
+	$(CC) $(CFLAGS) $(EXTRA_FLAGS) -c $< -o $@
