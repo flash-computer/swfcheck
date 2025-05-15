@@ -92,7 +92,7 @@ err error_handler(pdata *state, err code)
 		fprintf(stderr, "Problematic tag: %d, name: %s, data_pointer: %p, offset = %tu\n", tag->tag, tag_name(tag->tag), tag->tag_data, ((tag->tag_data) - (state->u_movie)));
 	}
 	fprintf(stderr, "%s%s\n", (code & 0xF0)?FATAL_ERR_MSG:WARN_MSG, error_messages[(code & 0xF0)>>4][code & 0xF]);
-	exit(code);
+	exit(0x10 + ((code>>4) & 0xFF));
 }
 
 err callback_peculiarity(pdata *state, dnode *node)

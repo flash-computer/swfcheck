@@ -51,9 +51,35 @@ const static char *help_fmt = FM_RESET FM_BOLD "SWFcheck version %u.%u" FM_RESET
 
 err close_file(pdata *state, FILE *file)
 {
+	if(!state || !file)
+	{
+		err ret = error_handler(state, EFN_ARGS);
+		if(ER_ERROR(ret))
+		{
+			return ret;
+		}
+	}
 	if(fclose(file))
 	{
 		return error_handler(state, EFL_CLOSE);
+	}
+	return ALL_CLEAR;
+}
+
+err open_file(pdata *state, FILE **file, char *file_n, char *opt)
+{
+	if(!state || !file_n)
+	{
+		err ret = error_handler(state, EFN_ARGS);
+		if(ER_ERROR(ret))
+		{
+			return ret;
+		}
+	}
+	*file = fopen(file_n, opt);
+	if(!(*file))
+	{
+		return error_handler(state, EFL_OPEN);
 	}
 	return ALL_CLEAR;
 }
@@ -118,7 +144,7 @@ int main(int nargs, char *args[])
 			{
 				close_file(&check_state, state.ifile);
 			}
-			state.ifile = fopen(state.ifile_n, "rb");
+			open_file(&check_state, &state.ifile, state.ifile_n, "rb");
 		}
 		argcnt--;
 	}
