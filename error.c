@@ -95,8 +95,8 @@ err error_handler(pdata *state, err code)
 	}
 	fprintf(stderr, "%s%s\n", (code & 0xF0)?FATAL_ERR_MSG:WARN_MSG, error_messages[(code & 0xF0)>>4][code & 0xF]);
 	puts("\nSummary:\n");
-	print_summary(state);
-	exit(0x10 + ((code>>4) & 0xFF));
+	printf("Compression-type: %c, version: %ju, movie-size: %ju\nMovie-rect:\n\tfield-size: %ju, xmin: %ju, xmax: %ju, ymin: %ju, ymax: %ju (All in twips)\nTotal number of tags: %ju\n", state->compression, (uintmax_t)(state->version), (uintmax_t)(state->movie_size), (uintmax_t)(state->header.movie_rect.field_size), (uintmax_t)(state->header.movie_rect.fields[0]), (uintmax_t)state->header.movie_rect.fields[1], (uintmax_t)(state->header.movie_rect.fields[2]), (uintmax_t)(state->header.movie_rect.fields[3]), (uintmax_t)(state->n_tags));
+	exit(0x10 + ((code>>4)&0xF));
 }
 
 err callback_peculiarity(pdata *state, dnode *node)

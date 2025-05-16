@@ -112,9 +112,12 @@ void swfcheck_file(pstate *prog, pdata *state, char *name)
 	}
 	printf(FM_BOLD FM_UNLN "File: %s" FM_RESET "\n", prog->ifile_n);
 	init_parse_data(state);
-	check_file_validity(state, prog->ifile);
+	err ret = check_file_validity(state, prog->ifile);
 	close_file(state, prog->ifile);
-	print_summary(state);
+	if(!ER_ERROR(ret))
+	{
+		print_summary(state);
+	}
 }
 
 
