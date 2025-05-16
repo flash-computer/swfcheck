@@ -77,6 +77,8 @@ const static ui16 low_risk_inval_tags[N_LOW_RISK_INVAL_TAGS] = {700, 777, 255, 2
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------|-----------------------------------------------------------------*/
 
+void print_summary(pdata *state);
+
 err error_handler(pdata *state, err code)
 {
 	if(!ER_ERROR(code))
@@ -92,6 +94,8 @@ err error_handler(pdata *state, err code)
 		fprintf(stderr, "Problematic tag: %d, name: %s, data_pointer: %p, offset = %tu\n", tag->tag, tag_name(tag->tag), tag->tag_data, ((tag->tag_data) - (state->u_movie)));
 	}
 	fprintf(stderr, "%s%s\n", (code & 0xF0)?FATAL_ERR_MSG:WARN_MSG, error_messages[(code & 0xF0)>>4][code & 0xF]);
+	puts("\nSummary:\n");
+	print_summary(state);
 	exit(0x10 + ((code>>4) & 0xFF));
 }
 

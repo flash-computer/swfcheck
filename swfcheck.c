@@ -84,6 +84,40 @@ err open_file(pdata *state, FILE **file, char *file_n, char *opt)
 	return ALL_CLEAR;
 }
 
+void print_summary(pdata *state)
+{
+	if(state->pec_list == NULL)
+	{
+		printf(COL_GR FM_BOLD "ALL CLEAR, check passed with no peculiarities encountered" FM_RESET "\n");
+	}
+	printf("Compression-type: %c, version: %ju, movie-size: %ju\nMovie-rect:\n\tfield-size: %ju, xmin: %ju, xmax: %ju, ymin: %ju, ymax: %ju (All in twips)\nTotal number of tags: %ju\n", state->compression, (uintmax_t)(state->version), (uintmax_t)(state->movie_size), (uintmax_t)(state->header.movie_rect.field_size), (uintmax_t)(state->header.movie_rect.fields[0]), (uintmax_t)state->header.movie_rect.fields[1], (uintmax_t)(state->header.movie_rect.fields[2]), (uintmax_t)(state->header.movie_rect.fields[3]), (uintmax_t)(state->n_tags));
+}
+
+void swfcheck_file(pstate *prog, pdata *state, char *name)
+{
+	prog->mgmt_flags[0] |= 0x1;
+	if(name)
+	{
+		prog->ifile_n = name;
+		if(prog->ifile != stdin && prog->ifile != stdout && prog->ifile != stderr)
+		{
+			close_file(state, prog->ifile);
+		}
+		open_file(state, &(prog->ifile), prog->ifile_n, "rb");
+	}
+	else
+	{
+		prog->ifile_n = "stdin";
+		prog->ifile = stdin;
+	}
+	printf(FM_BOLD FM_UNLN "File: %s" FM_RESET "\n", prog->ifile_n);
+	init_parse_data(state);
+	check_file_validity(state, prog->ifile);
+	close_file(state, prog->ifile);
+	print_summary(state);
+}
+
+
 int main(int nargs, char *args[])
 {
 	struct program_state state;
@@ -109,15 +143,17 @@ int main(int nargs, char *args[])
 
 	while(argcnt)
 	{
-		if(state.mgmt_flags[0] & 0x8)
-		{
-			state.mgmt_flags[0] &= ~0x8;
-			argcnt--;
-			continue;
-		}
-
 		if(args[nargs-argcnt][0] == '-')	// Flag checking
 		{
+			if(args[nargs-argcnt][1] == '\0')
+			{
+				swfcheck_file(&state, &check_state, NULL);
+				if(argcnt != 1)
+				{
+					destroy_parse_data(&check_state);
+					puts("\n");
+				}
+			}
 			size_t itr = 1;
 			while(args[nargs-argcnt][itr])
 			{
@@ -138,26 +174,15 @@ int main(int nargs, char *args[])
 		}
 		else
 		{
-			state.mgmt_flags[0] |= 0x1;
-			state.ifile_n = args[nargs-argcnt];
-			if(state.ifile != stdin && state.ifile != stdout && state.ifile != stderr)
+			swfcheck_file(&state, &check_state, args[nargs-argcnt]);
+			if(argcnt != 1)
 			{
-				close_file(&check_state, state.ifile);
+				destroy_parse_data(&check_state);
+				puts("\n");
 			}
-			open_file(&check_state, &state.ifile, state.ifile_n, "rb");
 		}
 		argcnt--;
 	}
-
-	init_parse_data(&check_state);
-	check_file_validity(&check_state, state.ifile);
-	close_file(&check_state, state.ifile);
-
-	if(check_state.pec_list == NULL)
-	{
-		printf(COL_GR FM_BOLD "ALL CLEAR, check passed with no peculiarities encountered" FM_RESET "\n");
-	}
-	printf("File: %s:\nCompression-type: %c, version: %ju, movie-size: %ju\nMovie-rect:\n\tfield-size: %ju, xmin: %ju, xmax: %ju, ymin: %ju, ymax: %ju (All in twips)\nTotal number of tags: %ju\n", state.ifile_n, check_state.compression, (uintmax_t)check_state.version, (uintmax_t)check_state.movie_size, (uintmax_t)check_state.movie_rect.field_size, (uintmax_t)check_state.movie_rect.fields[0], (uintmax_t)check_state.movie_rect.fields[1], (uintmax_t)check_state.movie_rect.fields[2], (uintmax_t)check_state.movie_rect.fields[3], (uintmax_t)check_state.n_tags);
 
 	exit(0x0);
 }
