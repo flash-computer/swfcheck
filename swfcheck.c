@@ -11,7 +11,6 @@
 #include<libswftag/swftag.h>	// Project Header
 #include<libswftag/swfmath.h>	// For some minor calculations and for some macros needed for compile time evaluation
 #include<libswftag/error.h>	// Error codes and handling
-#include<libswftag/check_functions.h>	// Validity checkers for each individual tag
 #include<libswftag/decompression.h>	// Decompression (not really rn lol)
 
 #define N_MGMT_FLAGS 8	// Number of Management flags in program state
