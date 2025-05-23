@@ -8,7 +8,7 @@ objs = \
 	error.o \
 	swfcheck.o \
 
-libs = -lz
+libs = -lz -llzma
 
 build/swfcheck: $(objs) $(libswftag_lib_root)/libswftag.a
 	$(CC) $(CFLAGS) $(EXTRA_FLAGS) $^ -o $@ $(libs)
