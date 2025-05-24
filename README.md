@@ -1,4 +1,4 @@
-# SWFcheck 0.1
+# SWFcheck 0.2
 An under development cli swf verification program based on github.com/flash-computer/libswftag
 
 ## Build Instructions:

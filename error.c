@@ -56,30 +56,33 @@ memory_allocfailure_err_msg
 all_clear_msg
 */
 #define UNKNOWN_PECULIAR_EXIT_MSG "Verification failed with unknown but present caveats"
-#define peculiar_exit_messages {"This is not an error. You should never see this",  "Peculiarity Filtered", "Premature End", UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG}
+#define peculiar_exit_messages {"This is not an error. You should never see this", "Peculiarity Filtered", "Premature End", UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG, UNKNOWN_PECULIAR_EXIT_MSG}
 
 const static char error_messages[16][16][100] = {peculiar_exit_messages, undefined_categories_messages, memory_error_messages, undefined_categories_messages, file_error_messages, undefined_categories_messages, prog_error_messages, undefined_categories_messages, swf_error_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages, undefined_categories_messages};
 
 #define UNKNOWN_PECULIARITY_MSG "This peculiarity has not been defined yet. If you encounter this, something is wrong."
 #define N_PEC ((PEC_MAX - PEC_MIN) + 1)
 
-const static char peculiar_messages[(PEC_MAX - PEC_MIN) + 1][100] = {"Padding in a bitfield isn't 0",
-																	"Tag is larger than it should be",
-																	"Mythical tag with no standard definition encountered",
-																	"Feature or Tag encountered in swf newer than the reported swf version",
-																	"Actual file size smaller than reported in header",
-																	"Undefined tag encountered",
-																	"Swf ends without a properly placed T_END tag",
-																	"Anomalous swf version",
-																	"File extends after the movie",
-																	"Reserved bit tampered",
-																	"Width of a bitfield is too big",
-																	"Short tag used for a tag that is usually long tag exclusive",
-																	"Compression feature encountered in swf newer than the reported swf version",
-																	"Feature not supported by this particular family member",
-																	"Mandatory field skipped in a relatively harmless context",
-																	"Terminator missing from null terminated string",
-																	"MD5 Hash is invalid"};
+const static char peculiar_messages[(PEC_MAX - PEC_MIN) + 1][100] = {"Padding in a bitfield isn't 0"
+																	,"Tag is larger than it should be"
+																	,"Mythical tag with no standard definition encountered"
+																	,"Feature or Tag encountered in swf newer than the reported swf version"
+																	,"Actual file size smaller than reported in header"
+																	,"Undefined tag encountered"
+																	,"Swf ends without a properly placed T_END tag"
+																	,"Anomalous swf version"
+																	,"File extends after the movie"
+																	,"Reserved bit tampered"
+																	,"Width of a bitfield is too big"
+																	,"Short tag used for a tag that is usually long tag exclusive"
+																	,"Compression feature encountered in swf newer than the reported swf version"
+																	,"Feature not supported by this particular family member"
+																	,"Mandatory field skipped in a relatively harmless context"
+																	,"Terminator missing from null terminated string"
+																	,"MD5 Hash is invalid"
+																	,"FileAttributes tag missing from the beginning of tag stream"
+																	,"FileAttributes tag not at the beginning of tag stream"
+																	};
 
 #define N_LOW_RISK_INVAL_TAGS 4
 
@@ -124,7 +127,7 @@ err callback_peculiarity(pdata *state, dnode *node)
 	}
 	ui32 pattern = ((peculiar *)(node->data))->pattern;
 	fprintf(stderr, PECULIARITY_MSG "Peculiarity encountered: 0x%jx\n", (uintmax_t)pattern);
-	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG)
+	if(pattern == PEC_INVAL_TAG || pattern == PEC_TIME_TRAVEL || pattern == PEC_MYTHICAL_TAG || state->tag_stream_end)
 	{
 		if(!(state->tag_stream_end))
 		{
@@ -135,7 +138,7 @@ err callback_peculiarity(pdata *state, dnode *node)
 		{
 			return error_handler(state, EFN_ARGS);
 		}
-		fprintf(stderr, FM_BOLD "Tag code: %ju, Tag size: %ju, tag_number:%ju" FM_RESET "\n", (uintmax_t)last_tag->tag, (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
+		fprintf(stderr, FM_BOLD "Tag code: %ju(%s), Tag size: %ju, tag_number:%ju" FM_RESET "\n", (uintmax_t)last_tag->tag, tag_name(last_tag->tag), (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
 	}
 	if(pattern >= PEC_MIN && pattern <= PEC_MAX)
 	{
