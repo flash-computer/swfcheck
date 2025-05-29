@@ -11,7 +11,6 @@
 #include<libswftag/swftag.h>	// Project Header
 #include<libswftag/swfmath.h>	// For some minor calculations and for some macros needed for compile time evaluation
 #include<libswftag/error.h>	// Error codes and handling
-#include<libswftag/decompression.h>	// Decompression (not really rn lol)
 
 #define N_MGMT_FLAGS 8	// Number of Management flags in program state
 #define UINT_BIT sizeof(unsigned int) * CHAR_BIT // Number of bits in an unsigned integer (same as the number of bits in a signed integer)

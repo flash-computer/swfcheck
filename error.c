@@ -138,7 +138,7 @@ err callback_peculiarity(pdata *state, dnode *node)
 		{
 			return error_handler(state, EFN_ARGS);
 		}
-		fprintf(stderr, FM_BOLD "Tag code: %ju(%s), Tag size: %ju, tag_number:%ju" FM_RESET "\n", (uintmax_t)last_tag->tag, tag_name(last_tag->tag), (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
+		fprintf(stderr, FM_BOLD "Tag code: %jd(%s), Tag size: %ju, tag_number:%ju" FM_RESET "\n", (intmax_t)last_tag->tag, (last_tag->tag == -1)?"File Header":tag_name(last_tag->tag), (uintmax_t)last_tag->size, (uintmax_t)state->n_tags);
 	}
 	if(pattern >= PEC_MIN && pattern <= PEC_MAX)
 	{
