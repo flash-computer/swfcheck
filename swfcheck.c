@@ -2,7 +2,7 @@
 /*-----------------------------------------------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------|-----------------------------------------------------------------*/
 #define SWFCHECK_VER_MAJ 0
-#define SWFCHECK_VER_MIN 1
+#define SWFCHECK_VER_MIN 2
 
 #include<stdio.h>	// Standard Input-Output Library
 #include<stdlib.h>	// Memory Management and the rest
