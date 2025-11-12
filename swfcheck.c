@@ -121,7 +121,7 @@ void swfcheck_file(pstate *prog, pdata *state, char *name)
 
 int main(int nargs, char *args[])
 {
-	struct program_state state;
+	pstate state;
 
 	size_t flag_ints = M_CEILDIV(N_MGMT_FLAGS, UINT_BIT);
 	for(size_t i=0; i<flag_ints; i++)
